@@ -1,0 +1,23 @@
+{
+    "775859454780244028": {
+        "alerts_channel": "882355604667117668",
+        "dao_role": "8",
+        "id": "1",
+        "latest_warning": "1 day, 0:00:00",
+        "name": "JuiceboxDAO"
+    },
+    "859269440805928960": {
+        "alerts_channel": "882351805827260416",
+        "dao_role": "6",
+        "id": "2",
+        "latest_warning": "2:00:00",
+        "name": "TileDAO"
+    },
+    "873253523272396850": {
+        "alerts_channel": "874480840074215425",
+        "dao_role": "8",
+        "id": "8",
+        "latest_warning": "2:00:00",
+        "name": "CanuDAO"
+    }
+}
