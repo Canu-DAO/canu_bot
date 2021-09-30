@@ -20,6 +20,8 @@ help_command = commands.DefaultHelpCommand(
 activity = discord.Game(name = prefix + 'help')
 bot = commands.Bot(command_prefix=prefix, help_command=help_command, activity=activity)
 
+with open('config.json', 'r') as file:
+    auth = json.load(file)["live_key"]
 
 # Bot commands
 @bot.command(name='list', aliases=['l'], help= 'Lists available DAOs.')
@@ -36,7 +38,6 @@ async def list(ctx):
 #@commands.has_any_role('Admin', 'admin', 'canuDOERS', 'Juicer!', 'core', 'canu')
 async def set_dao(ctx, project_name):
     try:
-
         with open(server_data_path, 'r') as file:
             server_data = json.load(file)
 
@@ -188,35 +189,35 @@ async def cycle_ending():
         channel_id = server_data[server]['alerts_channel']
         ## TODO: get role to be mentioned in/from server_data.json
 
-        dao_role = bot.get_channel(int(channel_id)).guild.roles[int(server_data[server]['dao_role'])].mention
-        print(f'{project_id} - {dao_role}')
+        #dao_role = channel.server.roles.mention('name', 'dao')
+        
         timeleft = JBReader.get_time_left(int(project_id))  
 
         if ((timeleft < timedelta(days=2)) and (server_data[server]["latest_warning"] == str(timedelta(hours=2)))):
-            message = f'Attention {dao_role}. Current funding cycle ends in 2 days!'
+            message = f'Attention! Current funding cycle ends in 2 days!'
             server_data[server]["latest_warning"] = str(timedelta(days=2))
             send = True
 
         if ((timeleft < timedelta(days=1)) and (server_data[server]["latest_warning"] == str(timedelta(days=2)))):
-            message = f'Attention {dao_role} Current funding cycle ends in 1 day!'
+            message = f'Attention! Current funding cycle ends in 1 day!'
             server_data[server]["latest_warning"] = str(timedelta(days=1))
             send = True
 
         if ((timeleft < timedelta(hours=12)) and (server_data[server]["latest_warning"] == str(timedelta(days=1)))):
-            message = f'Attention {dao_role}. Current funding cycle ends in 12 hours!'
+            message = f'Attention! Current funding cycle ends in 12 hours!'
             server_data[server]["latest_warning"] = str(timedelta(hours=12))
             send = True
 
         if ((timeleft < timedelta(hours=2)) and (server_data[server]["latest_warning"] == str(timedelta(hours=12)))):
-            message = f'Attention {dao_role}. Current funding cycle ends in 2 hours!'
+            message = f'Attention! Current funding cycle ends in 2 hours!'
             server_data[server]["latest_warning"] = str(timedelta(hours=2))
             send = True
         
         if send:
-            await bot.get_channel(int(channel_id)).send(message)
+           await bot.get_channel(int(channel_id)).send(message)
 
-    with open(server_data_path, 'w') as file:
-        json.dump(server_data, file, indent=4)
+        with open(server_data_path, 'w') as file:
+            json.dump(server_data, file, indent=4)
 
 @bot.event
 async def on_ready():
@@ -228,4 +229,4 @@ async def on_ready():
     new_events.start()
 
 
-bot.run('')
+bot.run(auth)

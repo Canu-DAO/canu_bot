@@ -1,7 +1,4 @@
-Generic JB Project, on set up add an ID so the features work for the given DAO
-
 Discord bot:
-
     Queries:
         DAO:
             funding cycle:
@@ -13,12 +10,13 @@ Discord bot:
                 discount:
                 bonding curve:
 
-            spending: how much everyone is receiving 
+            spending:
+                how much everyone is receiving 
+
             reserved:
 
         Personal Info(if we can link the wallet):
             balance on DM
-
 
     Alerts(toggable):
         money-in
@@ -26,14 +24,9 @@ Discord bot:
         distributed payment (handle_tap)
         distributed reserve 
     
-
-
     Actions:
         Votes?  (Sync discord user with wallet and vote with reacts, giving a result with wallet weights)
         Role assignment by tokens
-
-
-
 
 Roadmap:
     DAO Queries -> Alerts -> Connect wallet -> Actions

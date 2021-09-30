@@ -5,7 +5,8 @@ from datetime import datetime, timedelta
 import json
 from web3 import Web3
 
-w3 = Web3(Web3.HTTPProvider('https://mainnet.infura.io/v3/98469dd384934368a686fd6818f97182'))
+with open ('config.json', 'r') as file:    
+    w3 = Web3(Web3.HTTPProvider(json.load(file)["infura_url"]))
 JBReader = JuiceboxReader()
 
 server_data_path = 'resources/test_data.json'
@@ -13,11 +14,14 @@ server_data_path = 'resources/test_data.json'
 
 ### Bot settings
 # Prefix
-prefix = 'cn!'
+prefix = 'ct!'
 
 help_command = commands.DefaultHelpCommand(
     no_category = 'Commands'
 )
+
+with open('config.json', 'r') as file:
+    auth = json.load(file)["test_key"]
 
 activity = discord.Game(name = prefix + 'help')
 bot = commands.Bot(command_prefix=prefix, help_command=help_command, activity=activity)
@@ -38,7 +42,6 @@ async def list(ctx):
 #@commands.has_any_role('Admin', 'admin', 'canuDOERS', 'Juicer!', 'core', 'canu')
 async def set_dao(ctx, project_name):
     try:
-
         with open(server_data_path, 'r') as file:
             server_data = json.load(file)
 
@@ -92,7 +95,7 @@ async def curr_goal(ctx):
     with open(server_data_path, 'r') as file:
         server_data = json.load(file)
     project_id = int(server_data[str(ctx.guild.id)]["id"])
-    message = f'Target for this cycle: {JBReader.get_cycle_target(project_id)}' 
+    message = f'Target for this cycle: {JBReader.get_cycle_target(project_id)}'
     await ctx.send(message)
 
 @bot.command(name='reserved', aliases=['rr', 'r'], help = 'Tells you the percentage of tokens that are reserved in each payment transaction in the current cycle.')
@@ -178,6 +181,7 @@ async def new_events():
             for entry in entries:
                 await bot.get_channel(int(channel_id)).send(entry)
             
+
 @tasks.loop(seconds=60.0)
 async def cycle_ending():
     send = False
@@ -190,46 +194,44 @@ async def cycle_ending():
         channel_id = server_data[server]['alerts_channel']
 
         ## TODO: get role to be mentioned in/from server_data.json
-
-        dao_role = msg.channel.server.roles.mention('name', 'dao')
+        #dao_role = channel.server.roles.mention('name', 'dao')
         
         timeleft = JBReader.get_time_left(int(project_id))  
 
         if ((timeleft < timedelta(days=2)) and (server_data[server]["latest_warning"] == str(timedelta(hours=2)))):
-            message = f'Attention {dao_role.mention()}. Current funding cycle ends in 2 days!'
+            message = f'Attention! Current funding cycle ends in 2 days!'
             server_data[server]["latest_warning"] = str(timedelta(days=2))
             send = True
 
         if ((timeleft < timedelta(days=1)) and (server_data[server]["latest_warning"] == str(timedelta(days=2)))):
-            message = f'Attention {dao_role.mention()}. Current funding cycle ends in 1 day!'
+            message = f'Attention! Current funding cycle ends in 1 day!'
             server_data[server]["latest_warning"] = str(timedelta(days=1))
             send = True
 
         if ((timeleft < timedelta(hours=12)) and (server_data[server]["latest_warning"] == str(timedelta(days=1)))):
-            message = f'Attention {dao_role.mention()}. Current funding cycle ends in 12 hours!'
+            message = f'Attention! Current funding cycle ends in 12 hours!'
             server_data[server]["latest_warning"] = str(timedelta(hours=12))
             send = True
 
         if ((timeleft < timedelta(hours=2)) and (server_data[server]["latest_warning"] == str(timedelta(hours=12)))):
-            message = f'Attention {dao_role.mention()}. Current funding cycle ends in 2 hours!'
+            message = f'Attention! Current funding cycle ends in 2 hours!'
             server_data[server]["latest_warning"] = str(timedelta(hours=2))
             send = True
         
         if send:
-           await bot.get_channel(int(channel_id)).send(message)
-
+            print(server)
+            await bot.get_channel(int(channel_id)).send(message)
+    
     with open(server_data_path, 'w') as file:
+        print(server_data)
         json.dump(server_data, file, indent=4)
 
 @bot.event
 async def on_ready():
-
     JBReader.start_events()
 
     ## Start all alerts!
     cycle_ending.start()
     new_events.start()
 
-
-
-bot.run('')
+bot.run(auth)
