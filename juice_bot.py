@@ -172,10 +172,15 @@ async def new_events():
     for server in server_data:
         project_id = server_data[str(server)]['id']
         channel_id = server_data[str(server)]['alerts_channel']
-        entries = JBReader.get_new_events(project_id)
+        last_alerted_block = server_data[str(server)]['last_alerted_block']
+        entries, latest_block = JBReader.get_new_events(project_id, last_alerted_block)
         if entries:
             for entry in entries:
                 await bot.get_channel(int(channel_id)).send(entry)
+        
+        server_data[str(server)]['last_alerted_block'] = latest_block  # Update the last_updated_block
+        with open(server_data_path, 'w') as file:
+            json.dump(server_data, file, indent=4)
             
 @tasks.loop(seconds=60.0)
 async def cycle_ending():
