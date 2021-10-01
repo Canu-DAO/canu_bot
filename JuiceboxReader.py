@@ -114,15 +114,15 @@ class JuiceboxReader:
         print('All set-up')
 
 
-    def get_new_events(self, project_id):
+    def get_new_events(self, project_id, last_block_alerted):
         print(f'Checking events for: {project_id}')
-        latest = self.w3.eth.blockNumber
-        earliest = latest - 30
+        start_block = last_block_alerted + 1  # Increment so we don't do the same block twice
+        latest_block = self.w3.eth.blockNumber
         
         event_filter = []
-        tap_filter =  self.funding_cycles.events.Tap.createFilter(fromBlock=earliest, toBlock=latest, argument_filters={'projectId':int(project_id)})
-        redeem_filter =  self.terminal.events.Redeem.createFilter(fromBlock=earliest, toBlock=latest, argument_filters={'_projectId':int(project_id)})
-        pay_filter = self.terminal.events.Pay.createFilter(fromBlock=earliest, toBlock=latest, argument_filters={'projectId':int(project_id)})
+        tap_filter =  self.funding_cycles.events.Tap.createFilter(fromBlock=start_block, toBlock=latest_block, argument_filters={'projectId':int(project_id)})
+        redeem_filter =  self.terminal.events.Redeem.createFilter(fromBlock=start_block, toBlock=latest_block, argument_filters={'_projectId':int(project_id)})
+        pay_filter = self.terminal.events.Pay.createFilter(fromBlock=start_block, toBlock=latest_block, argument_filters={'projectId':int(project_id)})
         event_filter = [tap_filter, redeem_filter, pay_filter]
 
         entries = []
@@ -143,4 +143,4 @@ class JuiceboxReader:
                     eth_value = Web3.fromWei(_event['args']['amount'], 'ether')
                     tapped_amount = Web3.fromWei(_event['args']['newTappedAmount'], 'ether')
                     entries += [f"{eth_value} has just been distributed from our treasury. The total distributed amount for this funding cycle is {tapped_amount}."]
-        return entries
+        return entries, latest_block
