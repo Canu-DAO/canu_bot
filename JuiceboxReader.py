@@ -44,8 +44,10 @@ class JuiceboxReader:
         with open('resources/name_to_id.json') as file:
             self.name_to_id = json.load(file)
 
+    def get_latest_block(self):
+        return self.w3.eth.blockNumber
 
-        
+
     # Dao data
     def id_from_name(self, project_name):
         return self.name_to_id[project_name]
