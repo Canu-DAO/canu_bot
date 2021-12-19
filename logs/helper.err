@@ -1,0 +1,11 @@
+type object 'Database' has no attribute 'update_one'
+type object 'Database' has no attribute 'update_one'
+{'code': -32603, 'message': 'request failed or timed out'}
+{'code': -32603, 'message': 'request failed or timed out'}
+alerts: ['pay', '0xA6505023C4D93d30377aa735aD323e8B7f7f8610', Decimal('0.175'), '']
+{'code': -32603, 'message': 'request failed or timed out'}
+{'code': -32603, 'message': 'request failed or timed out'}
+HTTP Error 504: Gateway Time-out
+{'code': -32603, 'message': 'request failed or timed out'}
+Invalid URL 'ODc1NDY1ODMwMTY5NzE0NzI5.YRV7Fw.s2apztozCSWrqQ4CXABDkhyIKVY': No schema supplied. Perhaps you meant http://ODc1NDY1ODMwMTY5NzE0NzI5.YRV7Fw.s2apztozCSWrqQ4CXABDkhyIKVY?
+Invalid URL 'ODc1NDY1ODMwMTY5NzE0NzI5.YRV7Fw.s2apztozCSWrqQ4CXABDkhyIKVY': No schema supplied. Perhaps you meant http://ODc1NDY1ODMwMTY5NzE0NzI5.YRV7Fw.s2apztozCSWrqQ4CXABDkhyIKVY?

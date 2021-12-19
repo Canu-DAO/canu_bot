@@ -1,0 +1,5 @@
+## Data
+config.json
+*.pyc
+*.js
+migrations.pyc
