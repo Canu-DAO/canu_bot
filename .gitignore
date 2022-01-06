@@ -1,5 +1,5 @@
-## Data
-config.json
-*.pyc
+node_modules
+*.env
+package-lock.json
+yarn.lock
 *.js
-migrations.pyc
