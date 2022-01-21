@@ -1,172 +1,160 @@
-import axios from 'axios';
-import * as dotenv from 'dotenv';
-import Web3 from 'web3';
-import { Contract } from 'web3-eth-contract';
-import { Ens } from 'web3-eth-ens';
-import { provider } from 'web3-core';
-import { format, formatDistanceToNowStrict } from 'date-fns';
-import { dec2bin } from './utils';
+import axios from "axios";
+import * as dotenv from "dotenv";
+import { getMainnetSdk } from "@dethcrypto/eth-sdk-client"; // yay, our SDK! It's tailored especially for our needs
+import {
+  FundingCycle,
+  Prices,
+  Projects,
+  TerminalV1,
+} from "@dethcrypto/eth-sdk-client/types/index"; // yay, our SDK! It's tailored especially for our needs
+import { ethers, utils } from "ethers";
+import { format, formatDistanceToNowStrict } from "date-fns";
+import { dec2bin } from "./utils";
+import { FundingCycleStructOutput } from ".dethcrypto/eth-sdk-client/esm/types/FundingCycle";
+import { Logger } from "./utils/Logger";
+dotenv.config();
 export default class JuiceboxReader {
-    w3: Web3;
-    ns: Ens;
-    fundingCycles: Contract;
-    prices: Contract;
-    projects: Contract;
-    terminal: Contract;
+  sdk: {
+    FundingCycle: FundingCycle;
+    Prices: Prices;
+    Projects: Projects;
+    TerminalV1: TerminalV1;
+  };
+  provider: ethers.providers.BaseProvider;
 
-    constructor() {
-        dotenv.config();
-        const provider: provider = new Web3.providers.HttpProvider(process.env.INFURA_URL);
-        this.w3 = new Web3(provider);
-        this.ns = this.w3.eth.ens;
-        const Contract = this.w3.eth.Contract;
+  constructor() {
+    this.provider = new ethers.providers.InfuraProvider(
+      "homestead",
+      process.env.INFURA_KEY
+    );
+    const defaultSigner = ethers.Wallet.createRandom().connect(this.provider);
 
-        this.fundingCycles = new Contract(
-            require('./contracts/FundingCycles.abi.json'),
-            '0xf507B2A1dD7439201eb07F11E1d62AfB29216e2E'
-        );
+    this.sdk = getMainnetSdk(defaultSigner);
+  }
 
-        this.prices = new Contract(
-            require('./contracts/Prices.abi.json'),
-            '0xa9537Cc42555564206D4E57c0eb6943d56E83A30'
-        );
+  //#region TerminalV1 methods
+  async getBalance(projectId: number): Promise<string> {
+    let value = await this.sdk.TerminalV1.balanceOf(projectId);
+    return utils.formatEther(value.toString());
+  }
 
-        this.projects = new Contract(
-            require('./contracts/Projects.abi.json'),
-            '0x9b5a4053FfBB11cA9cd858AAEE43cc95ab435418'
-        );
+  async getOverflow(projectId: number): Promise<string> {
+    let value = await this.sdk.TerminalV1.currentOverflowOf(projectId);
+    return utils.formatEther(value.toString());
+  }
 
-        this.terminal = new Contract(
-            require('./contracts/TerminalV1.abi.json'),
-            '0xd569D3CCE55b71a8a3f3C418c329A66e5f714431'
-        );
-    }
+  getLatestBlock(): Promise<number> {
+    return this.provider.getBlockNumber();
+  }
 
-    //#region TerminalV1 methods
-    async getBalance(projectId: number): Promise<string> {
-        let value = await this.terminal.methods.balanceOf(projectId).call();
-        return this.w3.utils.fromWei(value.toString(), 'ether');
-    }
+  async getFullBalance(projectId: number): Promise<number> {
+    return (
+      parseFloat(await this.getBalance(projectId)) +
+      parseFloat(await this.getCycleTapped(projectId))
+    );
+  }
+  //#endregion TerminalV1 methods
 
-    async getOverflow(projectId: number): Promise<string> {
-        let value = await this.terminal.methods.currentOverflowOf(projectId).call();
-        return this.w3.utils.fromWei(value.toString(), 'ether');
-    }
+  //#region Projects methods
+  async getLogo(projectId: number): Promise<string> {
+    let contractURI = await this.sdk.Projects.uriOf(projectId);
+    const {
+      data: { logoUri: ipfsURI },
+    } = await axios.get(`https://ipfs.io/ipfs/${contractURI}`);
+    return ipfsURI;
+  }
 
-    getLatestBlock(): Promise<number> {
-        return this.w3.eth.getBlockNumber();
-    }
+  async getDaoName(projectId: number): Promise<string> {
+    let raw = await this.sdk.Projects.handleOf(projectId);
+    return utils.toUtf8String(raw);
+  }
 
-    async getFullBalance(projectId: number): Promise<number> {
-        return (
-            parseFloat(await this.getBalance(projectId)) +
-            parseFloat(await this.getCycleTapped(projectId))
-        );
-    }
-    //#endregion TerminalV1 methods
+  async getCount(): Promise<string> {
+    return (await this.sdk.Projects.count()).toString();
+  }
 
-    //#region Projects methods
-    async getLogo(projectId: number): Promise<string> {
-        let contract_uri = await this.projects.methods.uriOf(projectId).call();
-        const {
-            data: { logoUri: uri }
-        } = await axios.get(`https://ipfs.io/ipfs/${contract_uri}`);
-        return uri;
-    }
+  //#endregion Projects methods
 
-    async getDaoName(projectId: number): Promise<string> {
-        let raw = await this.projects.methods.handleOf(projectId).call();
-        return this.w3.utils.hexToAscii(raw);
-    }
+  //#region FundingCycle methods
+  async getRawCurrentCycle(
+    projectId: number
+  ): Promise<FundingCycleStructOutput> {
+    return await this.sdk.FundingCycle.currentOf(projectId);
+  }
 
-    async getCount(): Promise<string> {
-        let count = await this.projects.methods.count().call();
-        return count;
-    }
-    //#endregion Projects methods
+  async getRawNextCycle(projectId: number): Promise<FundingCycleStructOutput> {
+    return await this.sdk.FundingCycle.queuedOf(projectId);
+  }
 
-    //#region FundingCycle methods
-    async getRawCurrentCycle(projectId: number): Promise<any> {
-        //TODO: Create specific FundingCycle type to promise
-        let funding_cyle = await this.fundingCycles.methods.currentOf(projectId).call();
-        return funding_cyle;
-    }
+  async getCycleReserved(projectId: number): Promise<number> {
+    const { metadata } = await this.sdk.FundingCycle.currentOf(projectId);
+    return parseInt(dec2bin(metadata.toNumber()).slice(17, 23), 2);
+  }
 
-    async getRawNextCycle(projectId: number): Promise<any> {
-        //TODO: Create specific FundingCycle type to promise
-        return await this.fundingCycles.methods.queuedOf(projectId).call();
-    }
+  async getCycleBonding(projectId: number): Promise<number> {
+    const { metadata } = await this.sdk.FundingCycle.currentOf(projectId);
+    return parseInt(dec2bin(metadata.toNumber()).slice(0, 7), 2);
+  }
 
-    async getCycleReserved(projectId: number): Promise<number> {
-        const { metadata } = await this.fundingCycles.methods.currentOf(projectId).call();
-        return parseInt(dec2bin(metadata).slice(-16, -9), 2);
-    }
+  async getCycleTarget(projectId: number): Promise<string> {
+    let { target } = await this.getRawCurrentCycle(projectId);
+    return utils.formatEther(target.toString());
+  }
 
-    async getCycleBonding(projectId: number): Promise<number> {
-        const { metadata } = await this.fundingCycles.methods.currentOf(projectId).call();
-        return parseInt(dec2bin(metadata).slice(-23, -17), 2);
-    }
+  async getCycleDiscount(projectId: number): Promise<number> {
+    let { discountRate } = await this.getRawCurrentCycle(projectId);
+    return discountRate.toNumber() / 10;
+  }
 
-    async getCycleTarget(projectId: number): Promise<string> {
-        const { target } = await this.getRawCurrentCycle(projectId);
-        return this.w3.utils.fromWei(target.toString(), 'ether');
-    }
+  async getCycleTapped(projectId: number): Promise<string> {
+    let { tapped } = await this.getRawCurrentCycle(projectId);
+    return utils.formatEther(tapped);
+  }
 
-    async getCycleDiscount(projectId: number): Promise<number> {
-        const { discountRate } = await this.getRawCurrentCycle(projectId);
-        return discountRate;
-    }
+  async getCycleStart(projectId: number): Promise<string> {
+    let { start } = await this.getRawCurrentCycle(projectId);
+    return format(start.toNumber() * 1000, "yyyy-MM-dd'T'HH:mm");
+  }
 
-    async getCycleTapped(projectId: number): Promise<string> {
-        const { tapped } = await this.getRawCurrentCycle(projectId);
-        return this.w3.utils.fromWei(tapped, 'ether');
-    }
+  async getCycleEnd(projectId: number): Promise<string> {
+    let { start } = await this.getRawNextCycle(projectId);
+    return format(start.toNumber() * 1000, "yyyy-MM-dd'T'HH:mm");
+  }
 
-    async getCycleStart(projectId: number): Promise<string> {
-        const { start } = await this.getRawCurrentCycle(projectId);
-        return format(<number>start * 1000, "yyyy-MM-dd'T'HH:mm");
-    }
+  async getTimeLeft(projectId: number): Promise<string> {
+    let { start } = await this.getRawNextCycle(projectId);
+    return formatDistanceToNowStrict(start.toNumber() * 1000, {
+      addSuffix: true,
+      roundingMethod: "floor",
+    });
+  }
 
-    async getCycleEnd(projectId: number): Promise<string> {
-        const { start } = await this.getRawNextCycle(projectId);
-        return format(<number>start * 1000, "yyyy-MM-dd'T'HH:mm");
-    }
+  //#endregion FundingCycle methods
+  //   async getNewEvents(projectId: number, lastBlockAlerted: number): Promise<Object> {
+  //     const startBlock = lastBlockAlerted + 1;
+  //     const latestBlock = await this.getLatestBlock();
 
-    async getTimeLeft(projectId: number): Promise<string> {
-        const { start } = await this.getRawNextCycle(projectId);
-        return formatDistanceToNowStrict(<number>start * 1000, {
-            addSuffix: true,
-            roundingMethod: 'floor'
-        });
-    }
+  //     const pastTaps = await this.sdk.FundingCycle.getPastEvents('Tap', {
+  //         filter: { projectId: projectId },
+  //         fromBlock: startBlock,
+  //         toBlock: latestBlock
+  //     });
+  //     const pastRedeems = await this.terminal.getPastEvents('Redeem', {
+  //         filter: { projectId: projectId },
+  //         fromBlock: startBlock,
+  //         toBlock: latestBlock
+  //     });
+  //     const pastPays = await this.terminal.getPastEvents('Pay', {
+  //         filter: { projectId: projectId },
+  //         fromBlock: startBlock,
+  //         toBlock: latestBlock
+  //     });
 
-    //#region Event listener
-    async getNewEvents(projectId: number, lastBlockAlerted: number): Promise<Object> {
-        const startBlock = lastBlockAlerted + 1;
-        const latestBlock = await this.getLatestBlock();
-
-        const pastTaps = await this.fundingCycles.getPastEvents('Tap', {
-            filter: { projectId: projectId },
-            fromBlock: startBlock,
-            toBlock: latestBlock
-        });
-        const pastRedeems = await this.terminal.getPastEvents('Redeem', {
-            filter: { projectId: projectId },
-            fromBlock: startBlock,
-            toBlock: latestBlock
-        });
-        const pastPays = await this.terminal.getPastEvents('Pay', {
-            filter: { projectId: projectId },
-            fromBlock: startBlock,
-            toBlock: latestBlock
-        });
-
-        return {
-            pastTaps: pastTaps,
-            pastRedeems: pastRedeems,
-            pastPays: pastPays,
-            latestBlock: latestBlock
-        };
-    }
-    ////#endregion Event listener
+  //     return {
+  //         pastTaps: pastTaps,
+  //         pastRedeems: pastRedeems,
+  //         pastPays: pastPays,
+  //         latestBlock: latestBlock
+  //     };
+  // }
 }

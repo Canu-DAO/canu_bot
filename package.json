@@ -4,6 +4,7 @@
     "description": "A TypeScript Discord bot.",
     "main": "src/index.ts",
     "scripts": {
+        "dev": "ts-node src/index.ts",
         "start": "tsc && node dist/src/index.js"
     },
     "repository": {
@@ -13,18 +14,28 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "axios": "^0.24.0",
+        "@types/mongoose": "^5.11.97",
+        "axios": "^0.25.0",
         "date-fns": "^2.28.0",
         "discord.js": "^12.3.1",
         "dotenv": "^8.0.0",
+        "eth-sdk": "^0.2.10",
+        "ethers": "^5.5.3",
+        "express": "^4.17.2",
+        "mongodb": "^4.3.0",
+        "mongoose": "^6.1.6",
+        "mongoose-long": "^0.5.1",
         "reflect-metadata": "^0.1.13",
         "typedi": "^0.8.0",
         "typescript": "^3.6.2",
-        "web3": "^1.6.1",
         "winston": "^3.3.3"
     },
     "devDependencies": {
+        "@dethcrypto/eth-sdk": "^0.3.0",
+        "@dethcrypto/eth-sdk-client": "^0.1.6",
         "@types/dotenv": "^6.1.1",
+        "@types/express": "^4.17.13",
+        "@types/mongodb": "^4.0.7",
         "@types/node": "^12.7.3",
         "@types/winston": "^2.4.4",
         "@typescript-eslint/eslint-plugin": "^2.0.0",
@@ -36,6 +47,7 @@
         "eslint-plugin-import": "^2.14.0",
         "eslint-plugin-node": "^9.1.0",
         "eslint-plugin-prettier": "^3.1.0",
-        "prettier": "^1.18.2"
+        "prettier": "^1.18.2",
+        "ts-node": "^10.4.0"
     }
 }
