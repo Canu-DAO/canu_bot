@@ -9,10 +9,8 @@ export default class Ready implements BotEvent {
     this.JBR = new JuiceboxReader();
   }
 
-  public async run(): Promise<void> {
-    if (this.client.user) {
-      Logger.info(`${this.client.user.username} is running.`);
-      this.client.user.setPresence(this.client.settings.presence);
-    }
+  public async run(args: any): Promise<void> {
+    Logger.info(`entered redeem`);
+    Logger.info(`${args}`);
   }
 }
