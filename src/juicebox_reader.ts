@@ -3,6 +3,7 @@ import * as dotenv from "dotenv";
 import { getMainnetSdk } from "@dethcrypto/eth-sdk-client"; // yay, our SDK! It's tailored especially for our needs
 import {
   FundingCycle,
+  OpenSea,
   Prices,
   Projects,
   TerminalV1,
@@ -19,6 +20,7 @@ export default class JuiceboxReader {
     Prices: Prices;
     Projects: Projects;
     TerminalV1: TerminalV1;
+    OpenSea: OpenSea;
   };
   provider: ethers.providers.BaseProvider;
 

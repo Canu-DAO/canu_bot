@@ -59,23 +59,39 @@ export class ActionManager {
         const event = new Event(client);
         const eventName = evt.split(".")[0];
 
-        if (eventName.toLowerCase() == "tap") {
+        if (eventName.toLowerCase() == "opensea") {
+          Logger.info(`configuring OS`);
+          // JBR.sdk.OpenSea.on(
+          //   JBR.sdk.OpenSea.filters.OrdersMatched(),
+          //   (...args) => {
+          //     Logger.info("received OS");
+          //     event.run(args);
+          //   }
+          // );
+        } else if (eventName.toLowerCase() == "tap") {
           Logger.info(`configuring tap`);
           JBR.sdk.FundingCycle.on(
             JBR.sdk.FundingCycle.filters.Tap(),
-            (...args) => event.run(args)
+            (...args) => {
+              Logger.info("received tap");
+              event.run(args);
+            }
           );
         } else if (eventName.toLowerCase() == "redeem") {
           Logger.info(`configuring redeem`);
           JBR.sdk.TerminalV1.on(
             JBR.sdk.TerminalV1.filters.Redeem(),
-            (...args) => event.run(args)
+            (...args) => {
+              Logger.info("received redeem");
+              event.run(args);
+            }
           );
         } else if (eventName.toLowerCase() == "pay") {
           Logger.info(`configuring pay`);
-          JBR.sdk.TerminalV1.on(JBR.sdk.TerminalV1.filters.Pay(), (...args) =>
-            event.run(args)
-          );
+          JBR.sdk.TerminalV1.on(JBR.sdk.TerminalV1.filters.Pay(), (...args) => {
+            Logger.info("received args");
+            event.run(args);
+          });
         }
         client.on(
           eventName.charAt(0).toLowerCase() + eventName.slice(1),

@@ -9,8 +9,9 @@ export default class Ready implements BotEvent {
     this.JBR = new JuiceboxReader();
   }
 
-  public async run(args: any): Promise<void> {
-    Logger.info(`entered redeem`);
-    Logger.info(`${args}`);
+  public async run(args: any[]): Promise<void> {
+    Logger.info(`entered Redeem`);
+    const data: any = args[args.length - 1];
+    console.log(data.args);
   }
 }

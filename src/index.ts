@@ -1,7 +1,8 @@
-import 'reflect-metadata';
-import * as dotenv from 'dotenv';
-import { Container } from 'typedi';
-import { Client } from './Client';
+import "reflect-metadata";
+import * as dotenv from "dotenv";
+import { Container } from "typedi";
+import { Client } from "./Client";
+import JuiceboxReader from "./juicebox_reader";
 
 dotenv.config();
 
