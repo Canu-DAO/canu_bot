@@ -1,6 +1,6 @@
 {
-    "JuiceboxDAO" : "1",
-    "TileDAO" : "2",
+    "JuiceboxDAO": "1",
+    "TileDAO": "2",
     "Web3DAO": "3",
     "Sagamore Grove": "4",
     "WAGMI Studios": "5",
@@ -33,6 +33,6 @@
     "Lexicon Devils": "33",
     "ScribeDAO": "34",
     "Merch Squad": "35",
-    "ConstitutionDAO": "36"
-
+    "ConstitutionDAO": "36",
+    "Slice": "168"
 }
