@@ -1,17 +1,17 @@
 import axios from "axios";
 import * as dotenv from "dotenv";
-import { getMainnetSdk } from "@dethcrypto/eth-sdk-client"; // yay, our SDK! It's tailored especially for our needs
+import { getMainnetSdk } from "@sdk-client/index"; // yay, our SDK! It's tailored especially for our needs
 import {
   FundingCycle,
-  OpenSea,
+  // OpenSea,
   Prices,
   Projects,
   TerminalV1,
-} from "@dethcrypto/eth-sdk-client/types/index"; // yay, our SDK! It's tailored especially for our needs
+} from "@sdk-client/types"; // yay, our SDK! It's tailored especially for our needs
 import { ethers, utils } from "ethers";
 import { format, formatDistanceToNowStrict } from "date-fns";
 import { dec2bin } from "./utils";
-import { FundingCycleStructOutput } from ".dethcrypto/eth-sdk-client/esm/types/FundingCycle";
+import { FundingCycleStructOutput } from "@sdk-client/esm/types/FundingCycle";
 import { Logger } from "./utils/Logger";
 dotenv.config();
 export default class JuiceboxReader {
@@ -20,7 +20,7 @@ export default class JuiceboxReader {
     Prices: Prices;
     Projects: Projects;
     TerminalV1: TerminalV1;
-    OpenSea: OpenSea;
+    // OpenSea: OpenSea;
   };
   provider: ethers.providers.BaseProvider;
 

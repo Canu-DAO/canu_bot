@@ -1,5 +1,10 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@eth-sd/*": ["./eth-sdk/*"],
+      "@sdk-client/*": ["./dethcrypto/eth-sdk-client/*"]
+    },
     "target": "es6",
     "types": ["node"],
     "typeRoots": ["node_modules/@types"],
@@ -19,6 +24,6 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true
   },
-  "include": ["src", "MongoHelper.ts"],
+  "include": ["src", "MongoHelper.ts", "eth-sdk-client"],
   "exclude": ["dist", "node_modules"]
 }
