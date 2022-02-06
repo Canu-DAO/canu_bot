@@ -34,7 +34,8 @@ export default class Pay implements BotEvent {
     const docs = serverData.find({ project_id: project_id });
     (await docs).forEach((doc) => {
       this.sendInChannel(data.toString(), doc.alerts_channel.toString());
+      this.sendInChannel(data.toString(), '875439504096391181');
     });
-    console.log(data.args);
+    console.log(data);
   }
 }
