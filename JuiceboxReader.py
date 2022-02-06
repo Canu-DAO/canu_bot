@@ -15,6 +15,9 @@ class JuiceboxReader:
         with open('contracts/TerminalV1.abi.json') as abi_json:
             terminal_abi = json.load(abi_json)
 
+        with open('contracts/TerminalV1_1.abi.json') as abi_json:
+            terminal1_1_abi = json.load(abi_json)
+
         with open('contracts/FundingCycles.abi.json') as abi_json:
             funding_cycles_abi = json.load(abi_json)
 
@@ -29,6 +32,9 @@ class JuiceboxReader:
         terminal_address = '0xd569D3CCE55b71a8a3f3C418c329A66e5f714431'
         terminal_address = Web3.toChecksumAddress(terminal_address)
 
+        terminal1_1_address = '0x981c8ECD009E3E84eE1fF99266BF1461a12e5c68'
+        terminal1_1_address = Web3.toChecksumAddress(terminal1_1_address)
+
         funding_cycles_address = '0xf507B2A1dD7439201eb07F11E1d62AfB29216e2E'
         funding_cycles_address = Web3.toChecksumAddress(funding_cycles_address)
 
@@ -38,6 +44,7 @@ class JuiceboxReader:
         # Adding contracts
         self.projects = self.w3.eth.contract(projects_address, abi = projects_abi)
         self.terminal = self.w3.eth.contract(terminal_address, abi = terminal_abi)
+        self.terminal1 = self.w3.eth.contract(terminal1_1_address, abi = terminal1_1_abi)
         self.funding_cycles = self.w3.eth.contract(funding_cycles_address, abi = funding_cycles_abi)
         self.prices = self.w3.eth.contract(prices_addr, abi = prices_abi)
 
@@ -126,9 +133,17 @@ class JuiceboxReader:
         latest_block = self.w3.eth.blockNumber
         
         event_filter = []
+        # Funding cycles contract events
         tap_filter =  self.funding_cycles.events.Tap.createFilter(fromBlock=start_block, toBlock=latest_block, argument_filters={'projectId':int(project_id)})
+    
+        # TerminalV1 contract events
         redeem_filter =  self.terminal.events.Redeem.createFilter(fromBlock=start_block, toBlock=latest_block, argument_filters={'_projectId':int(project_id)})
         pay_filter = self.terminal.events.Pay.createFilter(fromBlock=start_block, toBlock=latest_block, argument_filters={'projectId':int(project_id)})
+
+        # TerminalV1.1 contract events
+        redeem1_filter =  self.terminal1.events.Redeem.createFilter(fromBlock=start_block, toBlock=latest_block, argument_filters={'_projectId':int(project_id)})
+        pay1_filter = self.terminal1.events.Pay.createFilter(fromBlock=start_block, toBlock=latest_block, argument_filters={'projectId':int(project_id)})
+
         event_filter = [tap_filter, redeem_filter, pay_filter]
 
         entries = []
