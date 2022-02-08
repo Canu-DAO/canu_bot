@@ -7,6 +7,7 @@ import {
   Prices,
   Projects,
   TerminalV1,
+  TerminalV11,
 } from "@sdk-client/types"; // yay, our SDK! It's tailored especially for our needs
 import { ethers, utils } from "ethers";
 import { format, formatDistanceToNowStrict } from "date-fns";
@@ -20,6 +21,7 @@ export default class JuiceboxReader {
     Prices: Prices;
     Projects: Projects;
     TerminalV1: TerminalV1;
+    TerminalV1_1: TerminalV11;
     // OpenSea: OpenSea;
   };
   provider: ethers.providers.BaseProvider;

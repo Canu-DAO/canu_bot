@@ -26,16 +26,22 @@ export default class Pay implements BotEvent {
   }
 
   public async run(args: any[]): Promise<void> {
-    Logger.info(`entered Pay`);
-
+    Logger.info(`Inside PayV1.1`);
     const data: any = args[args.length - 1].args;
     const project_id = data._projectId;
-
-    const docs = serverData.find({ project_id: project_id });
-    (await docs).forEach((doc) => {
-      this.sendInChannel(data.toString(), doc.alerts_channel.toString());
-      this.sendInChannel(data.toString(), '875439504096391181');
-    });
-    console.log(data);
+    const docs = await serverData.find({ project_id: project_id });
+    try {
+      Logger.info(`Pay1;1 Entered try`);
+      docs.forEach((doc) => {
+        this.sendInChannel(data.toString(), doc.alerts_channel.toString());
+      });
+    } catch (err) {
+      Logger.info(`Pay1;1 Entered err`);
+      Logger.error(err);
+    } finally {
+      Logger.info(`Pay1;1 Entered fin`);
+      await this.sendInChannel(data.toString(), "875439504096391181");
+      Logger.info(`PayV1.1: ${data.projectId}`);
+    }
   }
 }

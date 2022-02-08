@@ -11,6 +11,6 @@ export default class Ready implements BotEvent {
 
   public async run(args: any[]): Promise<void> {
     const data: any = args[args.length - 1];
-    Logger.info(`Tap: ${data.projectId}`);
+    Logger.info(`RedeemV1.1: ${data.projectId}`);
   }
 }

@@ -77,8 +77,8 @@ export class ActionManager {
               event.run(args);
             }
           );
-        } else if (eventName.toLowerCase() == "redeem") {
-          Logger.info(`configuring redeem`);
+        } else if (eventName.toLowerCase() == "redeemv1") {
+          Logger.info(`configuring redeem for terminalV1`);
           JBR.sdk.TerminalV1.on(
             JBR.sdk.TerminalV1.filters.Redeem(),
             (...args) => {
@@ -86,12 +86,30 @@ export class ActionManager {
               event.run(args);
             }
           );
-        } else if (eventName.toLowerCase() == "pay") {
-          Logger.info(`configuring pay`);
+        } else if (eventName.toLowerCase() == "payv1") {
+          Logger.info(`configuring pay for terminalV1`);
           JBR.sdk.TerminalV1.on(JBR.sdk.TerminalV1.filters.Pay(), (...args) => {
-            Logger.info("received args");
+            Logger.info("received payv1");
             event.run(args);
           });
+        } else if (eventName.toLowerCase() == "redeemv1_1") {
+          Logger.info(`configuring redeem for terminalV1.1`);
+          JBR.sdk.TerminalV1_1.on(
+            JBR.sdk.TerminalV1_1.filters.Redeem(),
+            (...args) => {
+              Logger.info("received redeem");
+              event.run(args);
+            }
+          );
+        } else if (eventName.toLowerCase() == "payv1_1") {
+          Logger.info(`configuring pay for terminalV1.1`);
+          JBR.sdk.TerminalV1_1.on(
+            JBR.sdk.TerminalV1_1.filters.Pay(),
+            (...args) => {
+              Logger.info("received payv11");
+              event.run(args);
+            }
+          );
         }
         client.on(
           eventName.charAt(0).toLowerCase() + eventName.slice(1),

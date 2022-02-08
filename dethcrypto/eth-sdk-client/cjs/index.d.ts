@@ -7,5 +7,6 @@ export declare function getMainnetSdk(defaultSigner: Signer): {
     Prices: types.Prices;
     Projects: types.Projects;
     TerminalV1: types.TerminalV1;
+    TerminalV1_1: types.TerminalV11;
     OpenSea: types.OpenSea;
 };
