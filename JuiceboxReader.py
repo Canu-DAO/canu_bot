@@ -144,7 +144,7 @@ class JuiceboxReader:
         redeem1_filter =  self.terminal1.events.Redeem.createFilter(fromBlock=start_block, toBlock=latest_block, argument_filters={'_projectId':int(project_id)})
         pay1_filter = self.terminal1.events.Pay.createFilter(fromBlock=start_block, toBlock=latest_block, argument_filters={'projectId':int(project_id)})
 
-        event_filter = [tap_filter, redeem_filter, pay_filter]
+        event_filter = [tap_filter, redeem_filter, pay_filter, redeem1_filter, pay1_filter]
 
         entries = []
         for filter in event_filter:
