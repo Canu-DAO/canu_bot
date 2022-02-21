@@ -62,7 +62,7 @@ class JuiceboxReader:
         return self.name_to_id[project_name]
 
     def get_balance(self, project_id):
-        return Web3.fromWei(self.terminal.functions.balanceOf(project_id).call(), 'ether')
+        return max (Web3.fromWei(self.terminal.functions.balanceOf(project_id).call(), 'ether'), Web3.fromWei(self.terminal1.functions.balanceOf(project_id).call(), 'ether'))
     
     def get_overflow(self, project_id):
         return Web3.fromWei(self.terminal.functions.currentOverflowOf(project_id).call(), 'ether')
