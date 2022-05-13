@@ -13,4 +13,5 @@ export const settings: BotSettings = {
     events: "src/events",
     chainEvents: "src/chain",
   },
+  categories: ["DAO Information", "Help", "Settings"]
 };

@@ -11,7 +11,7 @@ export default class alertsHere extends Command {
     super(client, {
       name: "alertshere",
       description: "Set the channel for alerts to be sent in.",
-      category: "DAO Information",
+      category: "Settings",
       usage: client.settings.prefix.concat("alertshere"),
       cooldown: 1000,
       requiredPermissions: ["SEND_MESSAGES"],
@@ -42,6 +42,7 @@ export default class alertsHere extends Command {
     }
     const embed = new MessageEmbed()
       .setTitle("Alets Channel")
+      .setColor("PURPLE")
       .setDescription(`Set alerts to be sent here.`);
     await super.respond(message.channel, embed);
   }

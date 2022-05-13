@@ -30,6 +30,7 @@ export default class reservedRate extends Command {
 
     let embed = new MessageEmbed()
       .setThumbnail(await JBR.getLogo(project_id))
+      .setColor("PURPLE")
       .setTitle("Current reserved rate")
       .setDescription(
         `Reserved rate for this cycle is: ${await JBR.getCycleReserved(

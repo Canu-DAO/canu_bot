@@ -9,6 +9,7 @@ import { settings as configuration } from "./config/config";
 @Service()
 export class Client extends DiscordClient implements BotClient {
   public settings: BotSettings;
+  
 
   constructor(private actionManager: ActionManager) {
     super(configuration.clientOptions || {});
@@ -16,6 +17,7 @@ export class Client extends DiscordClient implements BotClient {
     this.settings.token = process.env.BOT_TOKEN;
     this.initialize();
   }
+  
 
   private async initialize(): Promise<void> {
     try {

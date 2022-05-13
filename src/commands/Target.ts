@@ -38,6 +38,7 @@ export default class target extends Command {
 
     let embed = new MessageEmbed()
       .setThumbnail(await JBR.getLogo(project_id))
+      .setColor("PURPLE")
       .setTitle("Funding Target")
       .setDescription(
         `The funding target for this cycle is: ${decorator}${target_amnt}`

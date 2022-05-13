@@ -28,6 +28,7 @@ export default class getDAOName extends Command {
 
     let embed = new MessageEmbed()
       .setTitle("Current DAO")
+      .setColor("PURPLE")
       .setDescription(`The current DAO is ${project_name}`);
     await super.respond(message.channel, embed);
   }

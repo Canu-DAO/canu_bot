@@ -34,6 +34,7 @@ export default class discountRate extends Command {
     Logger.info(discount_rate);
     let embed = new MessageEmbed()
       .setThumbnail(await JBR.getLogo(project_id))
+      .setColor("PURPLE")
       .setTitle("Current discount rate")
       .setDescription(
         `The current discount rate is **${discount_rate}%**, this means payment to the project will yield **${discount_rate}% less tokens in the next cycle**.`

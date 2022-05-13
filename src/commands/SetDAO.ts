@@ -11,8 +11,8 @@ export default class setDAO extends Command {
     super(client, {
       name: "setdao",
       description: "Set the DAO for the server.",
-      category: "DAO Information",
-      usage: client.settings.prefix.concat("setdao"),
+      category: "Settings",
+      usage: client.settings.prefix.concat("setdao") + " <DAO Name>",
       cooldown: 1000,
       requiredPermissions: ["SEND_MESSAGES"],
     });

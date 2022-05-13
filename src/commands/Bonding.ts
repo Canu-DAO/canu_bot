@@ -34,6 +34,7 @@ export default class bondingCurve extends Command {
     let embed = new MessageEmbed()
       .setThumbnail(await JBR.getLogo(project_id))
       .setTitle("Current reserved rate")
+      .setColor("PURPLE")
       .setDescription(
         `The bonding curve is set at ${await JBR.getCycleBonding(
           project_id

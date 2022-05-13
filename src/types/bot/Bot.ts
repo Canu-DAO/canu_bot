@@ -37,6 +37,7 @@ export interface BotSettings {
     events: string;
     chainEvents: string;
   };
+  categories: string[];
 }
 
 export interface BotEvent {

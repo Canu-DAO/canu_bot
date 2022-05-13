@@ -9,7 +9,7 @@ import {
   TerminalV1,
   TerminalV11,
 } from "@sdk-client/types"; // yay, our SDK! It's tailored especially for our needs
-import { ethers, utils } from "ethers";
+import { BigNumber, BigNumberish, ethers, utils } from "ethers";
 import { format, formatDistanceToNowStrict } from "date-fns";
 import { dec2bin } from "./utils";
 import { FundingCycleStructOutput } from "@sdk-client/esm/types/FundingCycle";
@@ -37,30 +37,31 @@ export default class JuiceboxReader {
   }
 
   //#region TerminalV1 methods
-  async getBalance(projectId: number): Promise<string> {
-    let value = await this.sdk.TerminalV1.balanceOf(projectId);
+  async getBalance(projectId: BigNumberish, version: number): Promise<string> {
+    let value = (version == 1) ? this.sdk.TerminalV1.balanceOf(projectId) : this.sdk.TerminalV1_1.balanceOf(projectId);    
+    return utils.formatEther((await value).toString());
+  }
+
+  async getOverflow(projectId: BigNumberish, version: number): Promise<string> {
+    let value = (version == 1) ? this.sdk.TerminalV1.currentOverflowOf(projectId) : this.sdk.TerminalV1_1.currentOverflowOf(projectId);
     return utils.formatEther(value.toString());
   }
 
-  async getOverflow(projectId: number): Promise<string> {
-    let value = await this.sdk.TerminalV1.currentOverflowOf(projectId);
-    return utils.formatEther(value.toString());
-  }
-
+  //#endregion TerminalV1 methods
   getLatestBlock(): Promise<number> {
     return this.provider.getBlockNumber();
   }
 
-  async getFullBalance(projectId: number): Promise<number> {
+  async getFullBalance(projectId: BigNumberish, version: number): Promise<number> {
     return (
-      parseFloat(await this.getBalance(projectId)) +
+      parseFloat(await this.getBalance(projectId, version)) +
       parseFloat(await this.getCycleTapped(projectId))
     );
   }
   //#endregion TerminalV1 methods
 
   //#region Projects methods
-  async getLogo(projectId: number): Promise<string> {
+  async getLogo(projectId: BigNumberish): Promise<string> {
     let contractURI = await this.sdk.Projects.uriOf(projectId);
     const {
       data: { logoUri: ipfsURI },
@@ -68,9 +69,10 @@ export default class JuiceboxReader {
     return ipfsURI;
   }
 
-  async getDaoName(projectId: number): Promise<string> {
+  async getDaoName(projectId: BigNumberish): Promise<string> {
     let raw = await this.sdk.Projects.handleOf(projectId);
-    return utils.toUtf8String(raw);
+    let clean = raw.toString().replace(/00/g, '');
+    return utils.toUtf8String(clean);
   }
 
   async getCount(): Promise<string> {
@@ -81,51 +83,51 @@ export default class JuiceboxReader {
 
   //#region FundingCycle methods
   async getRawCurrentCycle(
-    projectId: number
+    projectId: BigNumberish
   ): Promise<FundingCycleStructOutput> {
     return await this.sdk.FundingCycle.currentOf(projectId);
   }
 
-  async getRawNextCycle(projectId: number): Promise<FundingCycleStructOutput> {
+  async getRawNextCycle(projectId: BigNumberish): Promise<FundingCycleStructOutput> {
     return await this.sdk.FundingCycle.queuedOf(projectId);
   }
 
-  async getCycleReserved(projectId: number): Promise<number> {
+  async getCycleReserved(projectId: BigNumberish): Promise<number> {
     const { metadata } = await this.sdk.FundingCycle.currentOf(projectId);
     return parseInt(dec2bin(metadata.toNumber()).slice(17, 23), 2);
   }
 
-  async getCycleBonding(projectId: number): Promise<number> {
+  async getCycleBonding(projectId: BigNumberish): Promise<number> {
     const { metadata } = await this.sdk.FundingCycle.currentOf(projectId);
     return parseInt(dec2bin(metadata.toNumber()).slice(0, 7), 2);
   }
 
-  async getCycleTarget(projectId: number): Promise<string> {
+  async getCycleTarget(projectId: BigNumberish): Promise<string> {
     let { target } = await this.getRawCurrentCycle(projectId);
     return utils.formatEther(target.toString());
   }
 
-  async getCycleDiscount(projectId: number): Promise<number> {
+  async getCycleDiscount(projectId: BigNumberish): Promise<number> {
     let { discountRate } = await this.getRawCurrentCycle(projectId);
     return discountRate.toNumber() / 10;
   }
 
-  async getCycleTapped(projectId: number): Promise<string> {
+  async getCycleTapped(projectId: BigNumberish): Promise<string> {
     let { tapped } = await this.getRawCurrentCycle(projectId);
     return utils.formatEther(tapped);
   }
 
-  async getCycleStart(projectId: number): Promise<string> {
+  async getCycleStart(projectId: BigNumberish): Promise<string> {
     let { start } = await this.getRawCurrentCycle(projectId);
     return format(start.toNumber() * 1000, "yyyy-MM-dd'T'HH:mm");
   }
 
-  async getCycleEnd(projectId: number): Promise<string> {
+  async getCycleEnd(projectId: BigNumberish): Promise<string> {
     let { start } = await this.getRawNextCycle(projectId);
     return format(start.toNumber() * 1000, "yyyy-MM-dd'T'HH:mm");
   }
 
-  async getTimeLeft(projectId: number): Promise<string> {
+  async getTimeLeft(projectId: BigNumberish): Promise<string> {
     let { start } = await this.getRawNextCycle(projectId);
     return formatDistanceToNowStrict(start.toNumber() * 1000, {
       addSuffix: true,
@@ -134,7 +136,7 @@ export default class JuiceboxReader {
   }
 
   //#endregion FundingCycle methods
-  //   async getNewEvents(projectId: number, lastBlockAlerted: number): Promise<Object> {
+  //   async getNewEvents(projectId: BigNumberish, lastBlockAlerted: number): Promise<Object> {
   //     const startBlock = lastBlockAlerted + 1;
   //     const latestBlock = await this.getLatestBlock();
 

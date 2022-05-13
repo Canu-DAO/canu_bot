@@ -30,7 +30,7 @@ export default class getBalance extends Command {
       .exec();
 
     let current_cycle = await JBR.getRawCurrentCycle(project_id);
-    let raw_balance = parseInt(await JBR.getBalance(project_id));
+    let raw_balance = await JBR.getFullBalance(project_id, 1 );
     let formatter = Math.floor(
       parseInt(
         (await JBR.sdk.Prices.getETHPriceFor(current_cycle[11])).toString()
@@ -51,6 +51,7 @@ export default class getBalance extends Command {
     let embed = new MessageEmbed()
       .setTitle("Treasury")
       .setThumbnail(await JBR.getLogo(project_id))
+      .setColor("PURPLE")
       .setDescription(
         `The ${project_name} tresury holds ${decorator}${tresury_amount}`
       );
