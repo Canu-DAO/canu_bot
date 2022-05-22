@@ -28,14 +28,15 @@ export default class reservedRate extends Command {
       .findOne({ server_id: guild_id })
       .exec();
 
+    const thumb = await JBR.getLogo(project_id);
+    const rate = await JBR.getCycleReserved(project_id);
+
     let embed = new MessageEmbed()
-      .setThumbnail(await JBR.getLogo(project_id))
+      .setThumbnail(thumb)
       .setColor("PURPLE")
       .setTitle("Current reserved rate")
       .setDescription(
-        `Reserved rate for this cycle is: ${await JBR.getCycleReserved(
-          project_id
-        )}`
+        `Reserved rate for this cycle is: ${rate}`
       );
 
     await super.respond(message.channel, embed);

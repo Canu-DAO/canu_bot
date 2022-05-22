@@ -36,8 +36,9 @@ export default class target extends Command {
       decorator = "Ξ";
     }
 
+    const thumb = await JBR.getLogo(project_id);
     let embed = new MessageEmbed()
-      .setThumbnail(await JBR.getLogo(project_id))
+      .setThumbnail(thumb)
       .setColor("PURPLE")
       .setTitle("Funding Target")
       .setDescription(

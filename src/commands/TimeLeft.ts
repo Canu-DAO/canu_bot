@@ -28,9 +28,10 @@ export default class getCyceEnd extends Command {
       .exec();
 
     let timestamp = Date.parse(await JBR.getCycleEnd(project_id));
-
+    
+    const thumb = await JBR.getLogo(project_id)
     let embed = new MessageEmbed()
-      .setThumbnail(await JBR.getLogo(project_id))
+      .setThumbnail(thumb)
       .setColor("PURPLE")
       .setTitle("End of Cycle")
       .setDescription(`The current cycle ends on <t:${timestamp / 1000}>`);

@@ -27,7 +27,7 @@ export default class JuiceboxReader {
   provider: ethers.providers.BaseProvider;
 
   constructor() {
-    this.provider = new ethers.providers.InfuraProvider(
+    this.provider = ethers.providers.InfuraProvider.getWebSocketProvider(
       "homestead",
       process.env.INFURA_KEY
     );

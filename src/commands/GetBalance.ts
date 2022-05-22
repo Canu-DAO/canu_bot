@@ -48,9 +48,10 @@ export default class getBalance extends Command {
       decorator = "Ξ";
     }
 
+    const thumb = await JBR.getLogo(project_id)
     let embed = new MessageEmbed()
       .setTitle("Treasury")
-      .setThumbnail(await JBR.getLogo(project_id))
+      .setThumbnail(thumb)
       .setColor("PURPLE")
       .setDescription(
         `The ${project_name} tresury holds ${decorator}${tresury_amount}`

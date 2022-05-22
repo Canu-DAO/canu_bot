@@ -11,7 +11,7 @@ const serverSchema: mongoose.Schema = new mongoose.Schema(
     latest_block: Long,
     cycle_warning: String,
   },
-  { collection: "test_data" }
+  { collection: "server_data" }
 );
 
 export const serverData: mongoose.Model<any> = mongoose.model(

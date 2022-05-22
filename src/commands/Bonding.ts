@@ -31,14 +31,14 @@ export default class bondingCurve extends Command {
 
     console.log((await JBR.getRawCurrentCycle(project_id)).metadata.toNumber());
 
+    let thumb = await JBR.getLogo(project_id)
+    let bonding = await JBR.getCycleBonding(project_id)
     let embed = new MessageEmbed()
-      .setThumbnail(await JBR.getLogo(project_id))
+      .setThumbnail(thumb)
       .setTitle("Current reserved rate")
       .setColor("PURPLE")
       .setDescription(
-        `The bonding curve is set at ${await JBR.getCycleBonding(
-          project_id
-        )}% for the current cycle.`
+        `The bonding curve is set at ${bonding}% for the current cycle.`
       );
 
     await super.respond(message.channel, embed);

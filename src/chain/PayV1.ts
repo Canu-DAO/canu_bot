@@ -25,16 +25,18 @@ export default class Pay implements BotEvent {
     const payment = utils.formatEther(amount);
     const new_balance = await this.JBR.getBalance(projectId, 1);
     const decorator = (await this.JBR.getRawCurrentCycle(projectId)).currency ? 'Ξ' : '$';
+    const name = await this.JBR.getDaoName(projectId);
+    const thumb = await this.JBR.getLogo(projectId);
     return new MessageEmbed()
-      .setTitle("New Pay")
+      .setTitle("New JBX Pay")
       .setColor(`PURPLE`)
       .addFields(
         { name: 'Amount',  value: `${decorator}${payment}`},
         { name: 'Sent by', value: `${caller}`},
         { name: 'New Balance', value: `${decorator}${new_balance}`},
-        { name: 'DAO', value: `${(await this.JBR.getDaoName(projectId))}`}
+        { name: 'DAO', value: `${name}`}
       )
-      .setThumbnail(await this.JBR.getLogo(projectId))
+      .setThumbnail(thumb)
       .setDescription(note)
   }
 
@@ -48,12 +50,18 @@ export default class Pay implements BotEvent {
   public async run(args: any[]): Promise<void> {
     Logger.info(`Inside PayV1`);
     const data: any = args[args.length - 1];
-    
+    const _embed = await this.formatEmbed(data);
+
+    Logger.info('trying')      
+    this.sendInChannel(_embed, "874810209367908413");
+    Logger.info('sent in JB')
+    this.sendInChannel(_embed, "875439504096391181");
+    Logger.info('sent in CTG')
     try {
-      // const docs = await serverData.find({ project_id: project_id }).maxTimeMS(10000).exec();
-      // docs.forEach((doc) => {
-        this.sendInChannel(await this.formatEmbed(data), "875439504096391181"); //doc.alerts_channel.toString());
-      // });
+      const docs = await serverData.find({ project_id: parseInt(data.args.projectId) }).maxTimeMS(10000).exec();
+      docs.forEach((doc) => {
+        this.sendInChannel(_embed, doc.alerts_channel.toString());
+      });
     } catch (err) { 
       Logger.error(err);
     } finally {

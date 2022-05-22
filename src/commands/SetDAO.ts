@@ -26,6 +26,7 @@ export default class setDAO extends Command {
     let id = parseInt(args[0]);
     let name = await JBR.getDaoName(id);
     let data = await serverData.findOne({ server_id: guild_id }).exec();
+    let thumb = await JBR.getLogo(id)
     if (data != null) {
       await serverData.updateOne(
         { server_id: guild_id },
@@ -42,7 +43,7 @@ export default class setDAO extends Command {
       });
     }
     let embed = new MessageEmbed()
-      .setThumbnail(await JBR.getLogo(id))
+      .setThumbnail(thumb)
       .setTitle("Current reserved rate")
       .setDescription(`New DAO for the server is ${name}.`);
 

@@ -24,6 +24,9 @@ export default class Ready implements BotEvent {
     const { amount, caller, newTappedAmount, projectId } = data.args;
     const payment = utils.formatEther(amount);
     const totalTapped = utils.formatEther(newTappedAmount);
+
+    const name = await this.JBR.getDaoName(projectId);
+    const thumb = await this.JBR.getLogo(projectId);
     
     return new MessageEmbed()
       .setTitle("New Tap")
@@ -32,8 +35,8 @@ export default class Ready implements BotEvent {
         { name: 'Amount Payed', value: `Ξ${payment}`},
         { name: 'Total payed this cycle', value: `Ξ${totalTapped}`},
         { name: 'Called by', value: `${caller}`},
-        { name: 'DAO', value: `${(await this.JBR.getDaoName(projectId))}`})
-      .setThumbnail(await this.JBR.getLogo(projectId))
+        { name: 'DAO', value: `${name}`})
+      .setThumbnail(thumb)
   }
 
   public async sendInChannel(message: MessageEmbed, channel: string) {
@@ -46,11 +49,18 @@ export default class Ready implements BotEvent {
   public async run(args: any[]): Promise<void> {
     Logger.info(`Inside Tap`);
     const data: any = args[args.length - 1];
+    const _embed = await this.formatEmbed(data);
+
+    Logger.info('trying')      
+    this.sendInChannel(_embed, "874810209367908413");
+    Logger.info('sent in JB')
+    this.sendInChannel(_embed, "875439504096391181");
+    Logger.info('sent in CTG')
     try {
-      // const docs = await serverData.find({ project_id: project_id }).maxTimeMS(10000).exec();
-      // docs.forEach((doc) => {
-        this.sendInChannel(await this.formatEmbed(data), "875439504096391181"); //doc.alerts_channel.toString());
-      // });
+      const docs = await serverData.find({ project_id: parseInt(data.args.projectId) }).maxTimeMS(10000).exec();
+      docs.forEach((doc) => {
+        this.sendInChannel(_embed, doc.alerts_channel.toString());
+      });
     } catch (err) { 
       Logger.error(err);
     } finally {
