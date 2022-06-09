@@ -1,6 +1,8 @@
 import pymongo, os
+from dotenv import load_dotenv
 
 class Database(object):
+    load_dotenv()
     url = os.environ["MONGO_URL"]
     database = None
     
@@ -10,8 +12,8 @@ class Database(object):
         Database.database = client['canuHelper']
     
     @staticmethod
-    def insert(collection, data):
-        Database.database[collection].insert(data)
+    def insert_one(collection, data):
+        Database.database[collection].insert_one(data)
         
     @staticmethod
     def find(collection, query):

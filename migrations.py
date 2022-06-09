@@ -1,12 +1,13 @@
 import json
 from database import Database
+from JuiceboxReader import JuiceboxReader
+import datetime
 
-with open('resources/server_data.json', 'r') as file:
-    data = json.load(file)
+a = datetime.datetime.now().timestamp()
+for i in range(10000000):
+    a +=1
+    a -=1
+b = datetime.datetime.now().timestamp()
 
-Database.initialize()
-    
-for server in data:
-    query = {"server_id": int(server)}
-    for x in Database.find('server_data', query):
-        print(x['latest_block'])
+
+c = datetime.timedelta(days=14)

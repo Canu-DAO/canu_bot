@@ -4,7 +4,7 @@ from discord.ext import commands
 from JuiceboxReader import JuiceboxReader
 from database import Database
 
-_collection = 'server_data'
+_collection = 'test_data'
 JBReader = JuiceboxReader()
 
 class JuiceboxDAO(commands.Cog):
