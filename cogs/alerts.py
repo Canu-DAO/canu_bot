@@ -1,8 +1,8 @@
 import sys, os, logging, discord
 from logging.handlers import RotatingFileHandler
 from discord.ext import commands, tasks
-from datetime import time, timedelta
-
+from datetime import time, timedelta, datetime
+import requests
 
 # Adds parent directory to path, so we can import JuiceboxReader
 curr = os.path.dirname(os.path.realpath(__file__))
@@ -12,7 +12,7 @@ sys.path.append(parent)
 from JuiceboxReader import JuiceboxReader
 from database import Database
 
-_collection = 'server_data'
+_collection = 'test_data'
 JBReader = JuiceboxReader()
 
 ## Logger config, with a rotating file system for both errors and normal operation.
@@ -38,6 +38,8 @@ class Alerts(commands.Cog):
     # Sets the upper level client as well as starting the threads.  
     def __init__(self, client):
         self.client = client
+        self.TELEGRAM = "5449748583:AAHlsROodB7j9wYM94nqBNjrfO1zU00xcWI"
+        self.telegram_chat = "1715810150"
         
         self.cycle_ending.start()
         self.new_events.start()
@@ -46,6 +48,8 @@ class Alerts(commands.Cog):
 
     # Formats any event that comes in from new_events()
     def format_entry(self, entry, project_id):
+        version = entry[-1]
+
         if (entry[0] == 'pay'):
             try:
                 _note = entry[3].replace('\x00', '')     
@@ -60,7 +64,7 @@ class Alerts(commands.Cog):
                 embed.add_field(name="Amount", value=f"Ξ{entry[2]}", inline=False)
                 embed.add_field(name="Sent by", value=f"{entry[1]}", inline=False)
                 
-                raw_balance = (JBReader.get_balance(project_id))
+                raw_balance = (JBReader.get_balance(project_id, version))
                 balance_formatter = (JBReader.prices.functions.getETHPriceFor(JBReader.funding_cycles.functions.currentOf(project_id).call()[11]).call()//10**18)
                 treasury_amount = "{:,.2f}".format(raw_balance * balance_formatter)       
 
@@ -92,38 +96,55 @@ class Alerts(commands.Cog):
         return embed
 
 
+    def check_timeout(self, timeout):
+        time_last_event = (datetime.now() - datetime.fromtimestamp(timeout['timestamp']))
+        if (time_last_event.days < 14):
+            logger.info('Recent events found!')
+            return True
+        else:
+            return False
+
+
+
+
     # Looks for new events every five minutes and sends them on discord
     @tasks.loop(seconds=900.0)
-    async def new_events(self):
-        
+    async def new_events(self):        
         data = Database.find(_collection, {})
-        
         for document in data:
             server = document['server_id']
             project_id = document['project_id']
             channel_id = document['alerts_channel']
             
             logger.info(f"Checking for events in {server}")
-            if (int(server) == 775859454780244028):# or (int(server) == 875439504096391178): # If server = JuiceboxDAO or Testing Grounds
+            if (int(server) == 775859454780244028): # If server = JuiceboxDAO 
                 try:
                     data_latest_block = document['latest_block']
-                    for i in range(1, int(JBReader.get_count()+1)): # Instead of project_id, we are going to get all projects 
-                        entries, latest_block = JBReader.get_new_events(i, data_latest_block)
-                        if entries:
-                            for entry in entries:
-                                pretty_message = self.format_entry(entry, i) 
-                                pretty_message.set_thumbnail(url=JBReader.get_logo(i))  
-                                pretty_message.add_field(name="DAO", value=str(JBReader.get_dao_name(i)))
-                                try:
-                                    await self.client.wait_until_ready() # This step is necessary to make sure the bot is ready to send
-                                    channel = self.client.get_channel(int(channel_id))
-                                    await channel.send(embed=pretty_message)                    
-                                    logger.info(f'sent {entry[0]} in {server}')
-                                except Exception as e:                                    
-                                    logger.error(f'failed to send {entry[0]} to {server}')
-                                    logger.error(e)
+                    for i in range(1, int(JBReader.get_count()+1)): # Instead of project_id, we are going to get all projects
+                        timeout = Database.find_one('project_timeout', {'project_id': i})
+                        if(self.check_timeout(timeout)):
+                            entries, latest_block = JBReader.get_new_events(i, data_latest_block)
+                            if entries:
+                                logger.info('found entries.')
+                                Database.update_one('project_timeout', {'project_id': i}, { '$set': {'timestamp': datetime.timestamp(datetime.now())}})
+                                for entry in entries:
+                                    pretty_message = self.format_entry(entry, i) 
+                                    pretty_message.set_thumbnail(url=JBReader.get_logo(i))  
+                                    pretty_message.add_field(name="DAO", value=str(JBReader.get_dao_name(i)))
+                                    try:
+                                        logger.info('trying')
+                                        await self.client.wait_until_ready() # This step is necessary to make sure the bot is ready to send
+                                        channel = self.client.get_channel(int(channel_id))
+                                        #channel = self.client.get_channel(int('875439504096391181'))
+                                        await channel.send(embed=pretty_message)                    
+                                        logger.info(f'sent {entry[0]} in {server}')
+                                    except Exception as e:                                    
+                                        logger.error(f'failed to send {entry[0]} to {server}')
+                                        logger.error(e)
+                            else:
+                                logger.info(f'No new entries for {JBReader.get_dao_name(i)}')
                         else:
-                            logger.info(f'No new entries for {JBReader.get_dao_name(i)}')
+                            continue
                     Database.update_one(_collection, {'server_id' : server}, { '$set': {'latest_block':latest_block}})
                 except Exception as e:
                     logger.error(e)
@@ -133,12 +154,15 @@ class Alerts(commands.Cog):
                     data_latest_block = document['latest_block']
                     entries, latest_block = JBReader.get_new_events(project_id, data_latest_block)
                     if entries:
+                        logger.info('found entries')
                         for entry in entries:
                             pretty_message = self.format_entry(entry, project_id)  
                             pretty_message.set_thumbnail(url=JBReader.get_logo(project_id)) 
                             try:
+                                logger.info('trying')
                                 await self.client.wait_until_ready()
                                 channel = self.client.get_channel(int(channel_id))
+                                #channel = self.client.get_channel(int('875439504096391181'))
                                 await channel.send(embed=pretty_message)                    
                                 logger.info(f'sent {entry[0]} in {server}')
                             except Exception as e:                                    
@@ -149,7 +173,6 @@ class Alerts(commands.Cog):
                     
                     Database.update_one(_collection, {'_id': document['_id']}, { '$set': {'latest_block':latest_block}})# Update the last_updated_block
                 except Exception as e:
-                    logger.error(f'alerts: {entry}')
                     logger.error(e)
                     Database.update_one(_collection, {'_id': document['_id']}, { '$set': {'latest_block':JBReader.get_latest_block()}})  # Update the last_updated_block
                 

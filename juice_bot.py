@@ -3,7 +3,9 @@ from discord.ext import commands
 from JuiceboxReader import JuiceboxReader
 from database import Database
 from web3 import Web3
+from dotenv import load_dotenv
 
+load_dotenv()
 # Start Web3 interface using infura key from envornment.
 w3 = Web3(Web3.HTTPProvider(os.environ["INFURA_URL"]))
 
@@ -25,7 +27,6 @@ activity = discord.Game(name = prefix + 'help')
 
 # Instantiate the bot
 bot = commands.Bot(command_prefix=prefix, help_command=help_command, activity=activity)
-
 
 ### Cog loading and unloading
 @bot.command()
