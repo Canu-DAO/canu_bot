@@ -3,4 +3,7 @@ config.json
 *.pyc
 *.js
 migrations.pyc
+logs
 logs/*
+.env
+
