@@ -95,7 +95,6 @@ class Alerts(commands.Cog):
             embed.add_field(name="Signed by", value=f"{entry[1]}", inline=False)
         return embed
 
-
     def check_timeout(self, timeout):
         time_last_event = (datetime.now() - datetime.fromtimestamp(timeout['timestamp']))
         if (time_last_event.days < 14):
@@ -104,10 +103,7 @@ class Alerts(commands.Cog):
         else:
             return False
 
-
-
-
-    # Looks for new events every five minutes and sends them on discord
+    # Looks for new events every 15 minutes and sends them on discord
     @tasks.loop(seconds=900.0)
     async def new_events(self):        
         data = Database.find(_collection, {})
@@ -115,7 +111,9 @@ class Alerts(commands.Cog):
             server = document['server_id']
             project_id = document['project_id']
             channel_id = document['alerts_channel']
-            
+            version = document['version']
+
+                     
             logger.info(f"Checking for events in {server}")
             if (int(server) == 775859454780244028): # If server = JuiceboxDAO 
                 try:
@@ -152,11 +150,11 @@ class Alerts(commands.Cog):
             else:
                 try:
                     data_latest_block = document['latest_block']
-                    entries, latest_block = JBReader.get_new_events(project_id, data_latest_block)
+                    entries, latest_block = JBReader.get_new_events(project_id, data_latest_block, version)
                     if entries:
                         logger.info('found entries')
                         for entry in entries:
-                            pretty_message = self.format_entry(entry, project_id)  
+                            pretty_message = self.format_entry(entry, project_id)
                             pretty_message.set_thumbnail(url=JBReader.get_logo(project_id)) 
                             try:
                                 logger.info('trying')
