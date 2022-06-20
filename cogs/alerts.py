@@ -12,7 +12,7 @@ sys.path.append(parent)
 from JuiceboxReader import JuiceboxReader
 from database import Database
 
-_collection = 'test_data'
+_collection = 'server_data'
 JBReader = JuiceboxReader()
 
 ## Logger config, with a rotating file system for both errors and normal operation.
@@ -65,10 +65,10 @@ class Alerts(commands.Cog):
                 embed.add_field(name="Sent by", value=f"{entry[1]}", inline=False)
                 
                 raw_balance = (JBReader.get_balance(project_id, version))
-                balance_formatter = (JBReader.prices.functions.getETHPriceFor(JBReader.funding_cycles.functions.currentOf(project_id).call()[11]).call()//10**18)
+                balance_formatter = (JBReader.contracts['v1']['prices'].functions.getETHPriceFor(JBReader.contracts[version]['funding_cycles'].functions.currentOf(project_id).call()[11]).call()//10**18)
                 treasury_amount = "{:,.2f}".format(raw_balance * balance_formatter)       
 
-                if (JBReader.funding_cycles.functions.currentOf(project_id).call()[11] != 0):
+                if (JBReader.contracts[version]['funding_cycles'].functions.currentOf(project_id).call()[11] != 0):
                     decorator = '$'
                 else:
                     decorator = 'Ξ'
@@ -101,6 +101,8 @@ class Alerts(commands.Cog):
             logger.info('Recent events found!')
             return True
         else:
+            if datetime.now().hour == 0:
+                return True
             return False
 
     # Looks for new events every 15 minutes and sends them on discord
@@ -108,20 +110,20 @@ class Alerts(commands.Cog):
     async def new_events(self):        
         data = Database.find(_collection, {})
         for document in data:
-            server = document['server_id']
-            project_id = document['project_id']
+            server = 875439504096391178 #document['server_id']
+            project_id =875439504096391181 # document['project_id']
             channel_id = document['alerts_channel']
             version = document['version']
 
                      
             logger.info(f"Checking for events in {server}")
-            if (int(server) == 775859454780244028): # If server = JuiceboxDAO 
+            if (int(server) == 775859454780244028 or int(server) == 875439504096391178): # If server = JuiceboxDAO 
                 try:
                     data_latest_block = document['latest_block']
-                    for i in range(1, int(JBReader.get_count()+1)): # Instead of project_id, we are going to get all projects
+                    for i in range(1, int(JBReader.get_count(version))+1): # Instead of project_id, we are going to get all projects
                         timeout = Database.find_one('project_timeout', {'project_id': i})
                         if(self.check_timeout(timeout)):
-                            entries, latest_block = JBReader.get_new_events(i, data_latest_block)
+                            entries, latest_block = JBReader.get_new_events(i, int(data_latest_block, version)
                             if entries:
                                 logger.info('found entries.')
                                 Database.update_one('project_timeout', {'project_id': i}, { '$set': {'timestamp': datetime.timestamp(datetime.now())}})
@@ -132,8 +134,8 @@ class Alerts(commands.Cog):
                                     try:
                                         logger.info('trying')
                                         await self.client.wait_until_ready() # This step is necessary to make sure the bot is ready to send
-                                        channel = self.client.get_channel(int(channel_id))
-                                        #channel = self.client.get_channel(int('875439504096391181'))
+                                        #channel = self.client.get_channel(int(channel_id))
+                                        channel = self.client.get_channel(int('875439504096391181'))
                                         await channel.send(embed=pretty_message)                    
                                         logger.info(f'sent {entry[0]} in {server}')
                                     except Exception as e:                                    
@@ -159,8 +161,8 @@ class Alerts(commands.Cog):
                             try:
                                 logger.info('trying')
                                 await self.client.wait_until_ready()
-                                channel = self.client.get_channel(int(channel_id))
-                                #channel = self.client.get_channel(int('875439504096391181'))
+                                #channel = self.client.get_channel(int(channel_id))
+                                channel = self.client.get_channel(int('875439504096391181'))
                                 await channel.send(embed=pretty_message)                    
                                 logger.info(f'sent {entry[0]} in {server}')
                             except Exception as e:                                    

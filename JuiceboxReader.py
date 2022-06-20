@@ -54,7 +54,12 @@ class JuiceboxReader:
             return "Unsupported version provided."
 
         return raw
-    
+    def get_count(self, version):
+        if version == 'v1':
+            return self.get_countv1()
+        elif version == 'v2':
+            return self.get_countv2()
+
     def get_countv2(self):
         return self.contracts['v2']['projects'].functions.count().call()
 
@@ -100,13 +105,14 @@ class JuiceboxReader:
         return self.get_balance(project_id) + self.get_cycle_tapped(project_id)
 
 
-    def get_new_events(project_id, latest_block, version):
+    def get_new_events(self, project_id, latest_block, version):
         if (version == 'v2'):
-            return get_new_events_v2(project_id, latest_block)
+            return self.get_new_events_v2(project_id, latest_block)
         else:
-            return get_new_events_v1(project_id, latest_block, version)
+            return self.get_new_events_v1(project_id, latest_block, version)
 
     def get_new_events_v1(self, project_id, last_block_alerted, version='v1'):
+
         start_block = last_block_alerted + 1  # Increment so we don't do the same block twice
         latest_block = self.w3.eth.blockNumber
         
@@ -119,18 +125,12 @@ class JuiceboxReader:
         pay_filter = self.contracts['v1']['terminal'].events.Pay.createFilter(fromBlock=start_block, toBlock=latest_block, argument_filters={'projectId':int(project_id)})
 
         # TerminalV1.1 contract events
-        redeem1_filter =  self.contracts['v1.1']['terminal'].events.Redeem.createFilter(fromBlock=start_block, toBlock=latest_block, argument_filters={'_projectId':int(project_id)})
-        pay1_filter = self.contracts['v1.1']['terminal'].events.Pay.createFilter(fromBlock=start_block, toBlock=latest_block, argument_filters={'projectId':int(project_id)})
-
-        # TerminalV2.0 events
-        pay2_filter = self.contracts['v2']['payment_terminal'].events.Pay.createFilter(fromBlock=start_block, toBlock=latest_block, argument_filters={'projectId':int(project_id)})
+        redeem1_filter =  self.contracts['v1.1']['terminal1'].events.Redeem.createFilter(fromBlock=start_block, toBlock=latest_block, argument_filters={'_projectId':int(project_id)})
+        pay1_filter = self.contracts['v1.1']['terminal1'].events.Pay.createFilter(fromBlock=start_block, toBlock=latest_block, argument_filters={'projectId':int(project_id)})
 
         filters_t1   = [tap_filter, redeem_filter, pay_filter]
         filters_t1_1 = [redeem1_filter, pay1_filter]
-        filters_t2   = [pay2_filter]
-
         entries = []
-
         for filter in filters_t1:
             for event in filter.get_all_entries():
                 entries.append(self.v1_handler(event))
@@ -138,10 +138,6 @@ class JuiceboxReader:
         for filter in filters_t1_1:
             for event in filter.get_all_entries():
                 entries.append(self.v1_handler(event))
-
-        for filter in filters_t2:
-            for event in filter.get_all_entries():
-                entries.append(self.v2_handler(event))
         
         return entries, latest_block
 
