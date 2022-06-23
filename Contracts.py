@@ -90,7 +90,7 @@ class Contracts:
         
         self.contracts['v1.1'] = {
             'projects':         self.w3.eth.contract(projects_address, abi = projects_abi),
-            'terminal1':        self.w3.eth.contract(terminal1_1_address, abi = terminal1_1_abi),
+            'terminal':        self.w3.eth.contract(terminal1_1_address, abi = terminal1_1_abi),
             'funding_cycles':   self.w3.eth.contract(funding_cycles_address, abi = funding_cycles_abi),
             'prices':           self.w3.eth.contract(prices_addr, abi = prices_abi),
 
