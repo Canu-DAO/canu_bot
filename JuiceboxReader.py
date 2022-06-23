@@ -26,11 +26,8 @@ class JuiceboxReader:
             uri = self.contracts['v1']['projects'].functions.uriOf(project_id).call()
             logo = json.load(urllib.request.urlopen(f"https://ipfs.io/ipfs/{uri}"))['logoUri']
         else:
-            logo = 'Unsupported version supported.'
+            logo = 'Unsupported version provided.'
         return logo
-
-    def id_from_name(self, project_name, version='v1'):
-        return self.name_to_id[project_name]
 
     def get_balance(self, project_id, version='v1'):
         if version == 'v2':
@@ -49,13 +46,14 @@ class JuiceboxReader:
             raw = self.contracts['v1']['projects'].functions.handleOf(project_id).call()
             raw = str(raw)[2:].split('\\')[0]
         elif (version == 'v2'):
-            raw = 'a'
+            raw = f'Project {project_id}'
         else:
             return "Unsupported version provided."
 
         return raw
+   
     def get_count(self, version):
-        if version == 'v1':
+        if version in ['v1', 'v1.1']:
             return self.get_countv1()
         elif version == 'v2':
             return self.get_countv2()
@@ -78,13 +76,19 @@ class JuiceboxReader:
         return raw_start.strftime('%Y-%m-%d at %H:%M:%S')
 
     def get_cycle_end(self, project_id, version='v1'):
-        raw_end = datetime.datetime.fromtimestamp(self.contracts['v1']['funding_cycles'].functions.queuedOf(project_id).call()[8])
-        return raw_end.strftime('%Y-%m-%d at %H:%M:%S')
+        if version in ['v1', 'v1.1']:
+            raw_end = datetime.datetime.fromtimestamp(self.contracts['v1']['funding_cycles'].functions.queuedOf(project_id).call()[8])
+            return raw_end.strftime('%Y-%m-%d at %H:%M:%S')
+        else:
+            return 'Unsupported version provided.'
 
     def get_time_left(self, project_id, version='v1'):
-        raw_end = datetime.datetime.fromtimestamp(self.contracts['v1']['funding_cycles'].functions.queuedOf(project_id).call()[8])
-        raw_left = raw_end - datetime.datetime.now()
-        return raw_left
+        if version in ['v1', 'v1.1']:
+            raw_end = datetime.datetime.fromtimestamp(self.contracts['v1']['funding_cycles'].functions.queuedOf(project_id).call()[8])
+            raw_left = raw_end - datetime.datetime.now()
+            return raw_left
+        else:
+            return 'Unsupported version provided.'
 
     def get_cycle_target(self, project_id, version='v1'):
         return Web3.fromWei(self.contracts['v1']['funding_cycles'].functions.currentOf(project_id).call()[10], 'ether')
@@ -104,7 +108,7 @@ class JuiceboxReader:
     def get_full_balance(self, project_id, version='v1'):
         return self.get_balance(project_id) + self.get_cycle_tapped(project_id)
 
-
+    # Events handlers
     def get_new_events(self, project_id, latest_block, version):
         if (version == 'v2'):
             return self.get_new_events_v2(project_id, latest_block)
@@ -125,8 +129,8 @@ class JuiceboxReader:
         pay_filter = self.contracts['v1']['terminal'].events.Pay.createFilter(fromBlock=start_block, toBlock=latest_block, argument_filters={'projectId':int(project_id)})
 
         # TerminalV1.1 contract events
-        redeem1_filter =  self.contracts['v1.1']['terminal1'].events.Redeem.createFilter(fromBlock=start_block, toBlock=latest_block, argument_filters={'_projectId':int(project_id)})
-        pay1_filter = self.contracts['v1.1']['terminal1'].events.Pay.createFilter(fromBlock=start_block, toBlock=latest_block, argument_filters={'projectId':int(project_id)})
+        redeem1_filter =  self.contracts['v1.1']['terminal'].events.Redeem.createFilter(fromBlock=start_block, toBlock=latest_block, argument_filters={'_projectId':int(project_id)})
+        pay1_filter = self.contracts['v1.1']['terminal'].events.Pay.createFilter(fromBlock=start_block, toBlock=latest_block, argument_filters={'projectId':int(project_id)})
 
         filters_t1   = [tap_filter, redeem_filter, pay_filter]
         filters_t1_1 = [redeem1_filter, pay1_filter]
